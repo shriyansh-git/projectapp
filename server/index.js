@@ -17,11 +17,10 @@ console.log('✅ index.js is running');
 
 // ✅ CORS for Netlify & local dev (optional: add localhost:3000 if needed for testing)
 app.use(cors({
-  origin: ['https://instapicme.netlify.app'],
+  origin: 'https://instapicme.netlify.app',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
