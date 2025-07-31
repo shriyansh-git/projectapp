@@ -53,11 +53,3 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
   });
-// Serve frontend from build (only in production)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client', 'build')));
-
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
-  });
-}
