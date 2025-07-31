@@ -11,12 +11,13 @@ const app = express();
 // ✅ Routes
 const authRoutes = require('./routes/auth');
 const postRoutes = require('./routes/posts');
-const userRoutes = require('./routes/users'); // ← NEW
+const userRoutes = require('./routes/users');
 
 console.log('✅ index.js is running');
 
+// ✅ CORS for Netlify & local dev (optional: add localhost:3000 if needed for testing)
 app.use(cors({
-   origin: ['http://localhost:3000', 'https://instapicme.netlify.app'],
+  origin: ['https://instapicme.netlify.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -25,6 +26,7 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// ✅ Session config (IMPORTANT for cookies to work cross-origin)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'keyboardcat',
   resave: false,
@@ -34,15 +36,18 @@ app.use(session({
   }),
   cookie: {
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24
+    maxAge: 1000 * 60 * 60 * 24, // 1 day
+    sameSite: 'none',           // required for cross-origin
+    secure: true                // required for HTTPS (Render)
   }
 }));
 
-// ✅ Register API routes
+// ✅ API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/users', userRoutes); // ← NEW
+app.use('/api/users', userRoutes);
 
+// ✅ MongoDB connection and server startup
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
