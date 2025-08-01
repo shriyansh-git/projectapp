@@ -90,5 +90,4 @@ router.get('/debug-session', (req, res) => {
   res.json({ message: 'Session test set' });
 });
 
-
 module.exports = router;
