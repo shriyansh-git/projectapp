@@ -79,5 +79,11 @@ router.get('/user/:id', async (req, res) => {
   }
 });
 
+// 🔍 Temporary test route
+router.get('/test', (req, res) => {
+  res.json({ message: '✅ Auth test route working' });
+});
+
+
 
 module.exports = router;
