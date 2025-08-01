@@ -84,6 +84,11 @@ router.get('/test', (req, res) => {
   res.json({ message: '✅ Auth test route working' });
 });
 
+// 🧪 Debug session setter
+router.get('/debug-session', (req, res) => {
+  req.session.debug = true;
+  res.json({ message: 'Session test set' });
+});
 
 
 module.exports = router;
