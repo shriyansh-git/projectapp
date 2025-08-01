@@ -8,16 +8,9 @@ const path = require('path');
 
 const app = express();
 
-// ✅ Routes
-const authRoutes = require('./routes/auth');
-const postRoutes = require('./routes/posts');
-const userRoutes = require('./routes/users');
-
-console.log('✅ index.js is running');
-
-// ✅ CORS (Netlify & local dev, allow credentials)
+// ✅ CORS must come BEFORE any body parsers or static files
 app.use(cors({
-  origin: ['https://instapicme.netlify.app'], // ✅ Frontend domain
+  origin: ['https://instapicme.netlify.app'], // Frontend domain
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -27,24 +20,28 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Session (cookie) configuration
+// ✅ Session config — sameSite & secure required for cross-site cookies
 app.use(session({
   secret: process.env.SESSION_SECRET || 'keyboardcat',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
-    ttl: 24 * 60 * 60, // Optional: 1 day session TTL
+    ttl: 24 * 60 * 60, // 1 day
   }),
   cookie: {
     httpOnly: true,
-    secure: true,        // ✅ Must be true for Render HTTPS
-    sameSite: 'none',    // ✅ Must be 'none' for cross-origin (Netlify to Render)
+    secure: true,        // Render uses HTTPS
+    sameSite: 'none',    // Required for Netlify <-> Render cookies
     maxAge: 1000 * 60 * 60 * 24, // 1 day
   }
 }));
 
-// ✅ API routes
+// ✅ Routes
+const authRoutes = require('./routes/auth');
+const postRoutes = require('./routes/posts');
+const userRoutes = require('./routes/users');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/users', userRoutes);
