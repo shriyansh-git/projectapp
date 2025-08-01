@@ -16,6 +16,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+app.options("*", cors({
+  origin: "https://instapicme.netlify.app",
+  credentials: true,
+}));
+
+
 // ✅ Console log to confirm server starts
 console.log('✅ index.js is running');
 
