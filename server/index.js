@@ -35,6 +35,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+app.set('trust proxy', 1);
+
+
 // ✅ Session (cookie) configuration
 app.use(session({
   name: 'sid',
