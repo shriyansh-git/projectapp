@@ -8,6 +8,14 @@ const path = require('path');
 
 const app = express();
 
+// ✅ CORS - allow frontend to use credentials
+app.use(cors({
+  origin: 'https://instapicme.netlify.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 // ✅ Console log to confirm server starts
 console.log('✅ index.js is running');
 
@@ -27,13 +35,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ CORS - allow frontend to use credentials
-app.use(cors({
-  origin: 'https://instapicme.netlify.app',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+
 
 // ✅ Session (cookie) configuration
 app.use(session({
