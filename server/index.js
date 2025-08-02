@@ -4,59 +4,58 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const path = require('path');
-
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const postRoutes = require('./routes/posts');
 
 const app = express();
 
-// ✅ Connect to MongoDB
+// ✅ Environment
+const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL;
+
+// ✅ MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+  .catch(err => console.error('❌ MongoDB error:', err));
 
 // ✅ Middleware
 app.use(express.json());
 
-const CLIENT_URL = process.env.CLIENT_URL;
-
-// ✅ CORS with credentials support
+// ✅ CORS - Allow frontend to send credentials
 app.use(cors({
   origin: CLIENT_URL,
   credentials: true,
 }));
 
-// ✅ Session configuration
+// ✅ Session Config
+app.set('trust proxy', 1); // Important for Render HTTPS cookies
+
 app.use(session({
   name: 'sid',
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    sameSite: 'none',
-    secure: true,
-    httpOnly: true,
-  },
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
-    ttl: 14 * 24 * 60 * 60, // 14 days
-    autoRemove: 'interval',
-    autoRemoveInterval: 10,
-    crypto: {
-      secret: process.env.SESSION_SECRET
-    }
-  })
+    collectionName: 'sessions',
+  }),
+  cookie: {
+    httpOnly: true,
+    secure: true, // must be true on Render (HTTPS)
+    sameSite: 'none',
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+  },
 }));
 
 // ✅ Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/posts', postRoutes);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/posts', require('./routes/posts'));
 
-// ✅ Server startup
-const PORT = process.env.PORT || 5000;
+// ✅ Default route
+app.get('/', (req, res) => {
+  res.send('Server is running...');
+});
+
+// ✅ Start Server
 app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
+  console.log(`🚀 Server listening on port ${PORT}`);
 });
