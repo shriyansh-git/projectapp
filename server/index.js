@@ -8,7 +8,7 @@ const path = require('path');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
-const postRoutes = require('./routes/post');
+const postRoutes = require('./routes/posts');
 
 const app = express();
 
