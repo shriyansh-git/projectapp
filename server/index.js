@@ -39,7 +39,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ✅ Session setup (FIXED: secure + sameSite)
+// ✅ Session setup with persistent Mongo store
 app.use(session({
   name: 'sid',
   secret: process.env.SESSION_SECRET || 'keyboardcat',
@@ -48,12 +48,14 @@ app.use(session({
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
     ttl: 60 * 60 * 24, // 1 day
+    autoRemove: 'interval',
+    autoRemoveInterval: 10,
   }),
   cookie: {
     httpOnly: true,
-    secure: true,         // ✅ Required for HTTPS
-    sameSite: 'none',     // ✅ Allows cross-origin
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    secure: true,        // Required for cross-site cookie over HTTPS
+    sameSite: 'none',    // Required for cross-origin cookie
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
   }
 }));
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const Post = require('../models/Post'); // Make sure this is imported
+const Post = require('../models/Post');
 
 // 📨 Register
 router.post('/register', async (req, res) => {
@@ -20,6 +20,8 @@ router.post('/register', async (req, res) => {
       username: newUser.username,
       email: newUser.email
     };
+
+    console.log('✅ Session after register:', req.session);
     res.status(201).json({ user: req.session.user });
   } catch (err) {
     console.error('❌ Register error:', err.message);
@@ -42,6 +44,8 @@ router.post('/login', async (req, res) => {
       username: user.username,
       email: user.email
     };
+
+    console.log('✅ Session after login:', req.session);
     res.status(200).json({ user: req.session.user });
   } catch (err) {
     console.error('❌ Login error:', err.message);
@@ -52,7 +56,8 @@ router.post('/login', async (req, res) => {
 // 👤 Me (get logged-in user)
 router.get('/me', (req, res) => {
   console.log('🧪 /me session ID:', req.sessionID);
-  console.log('🧪 /me session data:', req.session);
+  console.log('🧪 /me full session:', req.session);
+  console.log('🧪 /me session user:', req.session.user);
 
   if (req.session.user) {
     res.status(200).json({ user: req.session.user });
@@ -65,7 +70,14 @@ router.get('/me', (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
-    res.clearCookie('sid'); // Make sure 'sid' matches your cookie name
+
+    // ✅ Clear the correct cookie
+    res.clearCookie('sid', {
+      path: '/',
+      sameSite: 'none',
+      secure: true
+    });
+
     res.status(200).json({ message: 'Logged out' });
   });
 });
