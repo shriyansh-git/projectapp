@@ -3,63 +3,82 @@ const router = express.Router();
 const Post = require('../models/Post');
 const { isAuthenticated } = require('../middleware/auth');
 
-// 🔹 Create a new post
-router.post('/', isAuthenticated, async (req, res) => {
+// 📌 Get all posts
+router.get('/', async (req, res) => {
   try {
-    const { title, imageUrl, description } = req.body;
+    const posts = await Post.find()
+      .populate('user', 'username')
+      .populate('comments.user', 'username')
+      .sort({ createdAt: -1 });
+
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
+
+// 📌 Create post
+router.post('/', isAuthenticated, async (req, res) => {
+  const { title, imageUrl, description } = req.body;
+
+  try {
     const post = new Post({
       title,
       imageUrl,
       description,
-      user: req.user.id // use id, not _id
+      user: req.session.user.id,
     });
+
     await post.save();
-    res.status(201).json(post);
+    const populated = await post.populate('user', 'username');
+    res.status(201).json(populated);
   } catch (err) {
-    console.error('❌ Error creating post:', err);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: 'Failed to create post' });
   }
 });
 
-// 🔹 Get all posts with populated user and comments.user
-router.get('/', async (req, res) => {
-  try {
-    const posts = await Post.find()
-      .populate('user', 'username')           // post author username
-      .populate('comments.user', 'username') // commenters username
-      .sort({ createdAt: -1 });
-    res.json(posts);
-  } catch (err) {
-    console.error('❌ Error fetching posts:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// 🔹 Get logged-in user's posts
-router.get('/me', isAuthenticated, async (req, res) => {
-  try {
-    const posts = await Post.find({ user: req.user.id }).sort({ createdAt: -1 });
-    res.json(posts);
-  } catch (err) {
-    console.error('❌ Error fetching user posts:', err);
-    res.status(500).json({ error: 'Something went wrong' });
-  }
-});
-
-// 🔹 Add comment to a post
+// 📌 Comment on post
 router.post('/:id/comments', isAuthenticated, async (req, res) => {
+  const { text } = req.body;
+
   try {
-    const { text } = req.body;
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
-    post.comments.push({ text, user: req.user.id });
-    await post.save();
+    const comment = {
+      text,
+      user: req.session.user.id,
+      createdAt: new Date(),
+    };
 
-    res.status(200).json({ message: 'Comment added' });
+    post.comments.push(comment);
+    await post.save();
+    const populated = await Post.findById(post._id).populate('comments.user', 'username');
+    res.status(201).json(populated.comments.at(-1));
   } catch (err) {
-    console.error('❌ Error adding comment:', err);
-    res.status(500).json({ error: 'Something went wrong' });
+    res.status(500).json({ error: 'Failed to add comment' });
+  }
+});
+
+// 📌 Like/unlike post
+router.post('/:id/like', isAuthenticated, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    const userId = req.session.user.id;
+    const index = post.likes.indexOf(userId);
+
+    if (index === -1) {
+      post.likes.push(userId);
+    } else {
+      post.likes.splice(index, 1);
+    }
+
+    await post.save();
+    res.status(200).json({ likes: post.likes });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to toggle like' });
   }
 });
 
