@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const path = require('path');
 
 const app = express();
 
@@ -43,13 +42,13 @@ app.use(session({
 
 // ✅ Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/posts', require('./routes/posts')); // ✅ FIXED HERE
+app.use('/api/posts', require('./routes/posts'));
 
-// ✅ Serve frontend build in production
-app.use(express.static(path.join(__dirname, '../client/build')));
-app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirname, '../client/build/index.html'))
-);
+// ❌ REMOVE frontend serving – not needed for backend-only Render deployment
+// app.use(express.static(path.join(__dirname, '../client/build')));
+// app.get('*', (req, res) =>
+//   res.sendFile(path.join(__dirname, '../client/build/index.html'))
+// );
 
 // ✅ Connect to MongoDB then start server
 mongoose.connect(process.env.MONGO_URI)
