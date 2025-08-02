@@ -14,33 +14,34 @@ const NewPost = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleChange = e => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
+
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include',
+        credentials: 'include', // 🔒 Session cookie for auth
         body: JSON.stringify(formData)
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Something went wrong');
+        throw new Error(data.error || 'Failed to create post');
       }
 
-      await res.json();
       setSuccess('Post created!');
       setFormData({ title: '', imageUrl: '', description: '' });
 
-      setTimeout(() => navigate('/'), 1000);
+      setTimeout(() => navigate('/'), 1200);
     } catch (err) {
       setError(err.message || 'Something went wrong');
     }
@@ -58,7 +59,7 @@ const NewPost = () => {
             value={formData.title}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <input
             type="text"
@@ -67,29 +68,25 @@ const NewPost = () => {
             value={formData.imageUrl}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <textarea
             name="description"
             placeholder="Description"
             value={formData.description}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
             type="submit"
-            className="w-full py-2 bg-primary text-white rounded-md hover:bg-indigo-600 transition"
+            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition"
           >
             Post
           </button>
         </form>
 
-        {error && (
-          <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
-        )}
-        {success && (
-          <p className="text-green-500 text-sm mt-4 text-center">{success}</p>
-        )}
+        {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
+        {success && <p className="text-green-500 text-sm mt-4 text-center">{success}</p>}
       </div>
     </div>
   );

@@ -1,0 +1,44 @@
+const express = require('express');
+const router = express.Router();
+const User = require('../models/User');
+const Post = require('../models/Post');
+
+// 📌 Get user by username
+router.get('/profile/:username', async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username.toLowerCase() })
+      .select('-password')
+      .populate('followers', 'username')
+      .populate('following', 'username');
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const posts = await Post.find({ user: user._id }).sort({ createdAt: -1 });
+
+    res.json({ user, posts });
+  } catch (err) {
+    console.error('Error fetching user by username:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// 📌 Get user by ID (needed for UserProfile.jsx)
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select('-password')
+      .populate('followers', 'username')
+      .populate('following', 'username');
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const posts = await Post.find({ user: user._id }).sort({ createdAt: -1 });
+
+    res.json({ user, posts });
+  } catch (err) {
+    console.error('Error fetching user by ID:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+module.exports = router;

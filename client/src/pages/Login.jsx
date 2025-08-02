@@ -7,16 +7,26 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+
     setErrorMsg('');
+    setLoading(true);
     try {
       await login(email, password);
-      navigate('/'); // ✅ Redirect on successful login
+      navigate('/');
     } catch (err) {
-      setErrorMsg('Invalid email or password.'); // ✅ Error shown if login fails
+      if (err.response && err.response.status === 401) {
+        setErrorMsg('Invalid email or password.');
+      } else {
+        setErrorMsg('Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,7 +47,7 @@ export default function Login() {
             <input
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               placeholder="you@example.com"
@@ -49,7 +59,7 @@ export default function Login() {
             <input
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               placeholder="••••••••"
@@ -58,9 +68,14 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 transition py-2 rounded-lg text-white text-sm font-medium"
+            disabled={loading}
+            className={`w-full py-2 rounded-lg text-white text-sm font-medium transition ${
+              loading
+                ? 'bg-gray-700 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700'
+            }`}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
       </div>

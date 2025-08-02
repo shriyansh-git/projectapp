@@ -7,15 +7,18 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       await register(username, email, password);
       navigate('/');
     } catch (err) {
-      alert('Registration failed');
+      console.error(err);
+      setError('Registration failed. Try a different email or username.');
     }
   };
 
@@ -28,6 +31,10 @@ export default function Register() {
         <h2 className="text-3xl font-bold mb-6 text-center tracking-wide">
           Sign Up
         </h2>
+
+        {error && (
+          <p className="mb-4 text-red-500 text-sm text-center">{error}</p>
+        )}
 
         <input
           type="text"

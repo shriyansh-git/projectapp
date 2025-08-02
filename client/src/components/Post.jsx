@@ -3,6 +3,14 @@ import { Link } from 'react-router-dom';
 
 export default function Post({ post, toggleLike, handleCommentSubmit }) {
   const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (commentText.trim() === '') return;
+    handleCommentSubmit(e, post._id, commentText);
+    setCommentText('');
+  };
 
   return (
     <div className="bg-[#111] border border-gray-800 rounded-xl overflow-hidden shadow-md">
@@ -12,13 +20,13 @@ export default function Post({ post, toggleLike, handleCommentSubmit }) {
         className="w-full h-64 object-cover"
       />
       <div className="p-4">
-        <h2 className="text-xl font-semibold mb-1">{post.title}</h2>
+        <h2 className="text-xl font-semibold mb-1 text-white">{post.title}</h2>
         <p className="text-gray-400 text-sm mb-2">{post.description}</p>
 
-        {/* ✅ Link to user profile */}
+        {/* ✅ Username Link */}
         <p className="text-indigo-400 text-xs mb-3">
           Posted by{' '}
-          <Link to={`/user/${post.user?._id}`} className="underline hover:text-indigo-300">
+          <Link to={`/profile/${post.user?._id}`} className="underline hover:text-indigo-300">
             {post.user?.username}
           </Link>
         </p>
@@ -43,10 +51,10 @@ export default function Post({ post, toggleLike, handleCommentSubmit }) {
           {showComments ? 'Hide Comments' : 'Show Comments'}
         </button>
 
-        {/* Comments */}
+        {/* Comments Section */}
         {showComments && (
           <div className="mt-4 space-y-3">
-            {post.comments && post.comments.length > 0 ? (
+            {post.comments?.length > 0 ? (
               post.comments.map((comment, i) => (
                 <div key={i} className="text-sm text-gray-300 border-t border-gray-700 pt-2">
                   <p className="text-white">{comment.text}</p>
@@ -59,10 +67,13 @@ export default function Post({ post, toggleLike, handleCommentSubmit }) {
               <p className="text-sm text-gray-500">No comments yet.</p>
             )}
 
-            <form onSubmit={e => handleCommentSubmit(e, post._id)} className="mt-2">
+            {/* Add Comment */}
+            <form onSubmit={handleSubmit} className="mt-2">
               <input
                 type="text"
                 name="comment"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Add a comment..."
                 className="w-full p-2 bg-gray-800 border border-gray-700 text-sm rounded-lg text-white placeholder-gray-400 focus:outline-none"
               />

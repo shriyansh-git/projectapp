@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import axios from '../api/axios'; // ✅ use centralized axios instance
 
 export default function Profile() {
   const { user } = useAuth();
@@ -9,16 +10,11 @@ export default function Profile() {
   useEffect(() => {
     const fetchMyPosts = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/me`, {
-          credentials: 'include',
-        });
-
-        if (!res.ok) throw new Error('Failed to fetch your posts');
-        const data = await res.json();
-        setMyPosts(data);
+        const res = await axios.get('/api/posts/me'); // ✅ No need to specify baseURL or credentials
+        setMyPosts(res.data);
       } catch (err) {
         console.error(err);
-        setError(err.message);
+        setError('Failed to fetch your posts');
       }
     };
 

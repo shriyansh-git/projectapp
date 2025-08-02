@@ -10,18 +10,22 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
 
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/profile/${userId}`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `${API_BASE}/api/users/${userId}`,
+          { withCredentials: true }
+        );
 
         setProfile(res.data);
 
+        // Check if current user follows this profile
         if (
           currentUser &&
-          res.data.user.followers.some((f) => f._id === currentUser.id)
+          res.data.user.followers?.some((f) => f._id === currentUser.id)
         ) {
           setIsFollowing(true);
         }
@@ -40,7 +44,7 @@ const UserProfile = () => {
     try {
       const action = isFollowing ? 'unfollow' : 'follow';
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/users/${userId}/${action}`,
+        `${API_BASE}/api/users/${profile.user._id}/${action}`,
         {},
         { withCredentials: true }
       );
@@ -62,7 +66,7 @@ const UserProfile = () => {
   if (!profile)
     return <p className="text-red-400 text-center mt-10">User not found.</p>;
 
-  const { user, posts, followersCount, followingCount } = profile;
+  const { user, posts = [], followersCount, followingCount } = profile;
 
   return (
     <div className="min-h-screen bg-black text-white px-4 py-10">

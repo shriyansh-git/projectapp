@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Post = require('../models/Post');
-const authMiddleware = require('../middleware/auth');
+const authMiddleware = require('../middleware/auth'); // ✅ Make sure this path is correct
 
 // 🔒 GET current logged-in user info
 router.get('/me', authMiddleware, async (req, res) => {
@@ -69,7 +69,7 @@ router.post('/:id/unfollow', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ GET user profile by username (for /user/:username)
+// ✅ GET user profile by username (used in frontend route /user/:username)
 router.get('/profile/:username', async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username.toLowerCase() })
@@ -96,11 +96,10 @@ router.get('/profile/:username', async (req, res) => {
   }
 });
 
-// ✅ GET user by ID (used for session and auth checks)
+// ✅ GET user by ID (used by frontend at /api/users/:id)
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
-
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const posts = await Post.find({ user: user._id }).sort({ createdAt: -1 });

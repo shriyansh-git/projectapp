@@ -10,7 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import { AuthProvider } from './context/AuthContext';
 import UserProfile from './pages/UserProfile';
-import SessionTest from './components/SessionTest'; // ✅ ADD THIS
+import SessionTest from './components/SessionTest';
 
 const App = () => {
   return (
@@ -63,7 +63,7 @@ const App = () => {
               }
             />
             <Route
-              path="/user/:userId"
+              path="/profile/:userId" // ✅ FIXED
               element={
                 <ProtectedRoute>
                   <UserProfile />
@@ -71,11 +71,8 @@ const App = () => {
               }
             />
 
-            {/* ✅ Session test route */}
-            <Route
-              path="/debug"
-              element={<SessionTest />}
-            />
+            {/* Debug Route */}
+            <Route path="/debug" element={<SessionTest />} />
           </Routes>
         </div>
       </Router>

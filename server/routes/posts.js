@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
-const { isAuthenticated } = require('../middleware/auth');
+const isAuthenticated = require('../middleware/auth'); // ✅ FIXED
 
 // 📌 Get all posts
 router.get('/', async (req, res) => {

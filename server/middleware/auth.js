@@ -1,4 +1,6 @@
-exports.isAuthenticated = (req, res, next) => {
+// middleware/auth.js
+
+module.exports = (req, res, next) => {
   if (req.session.user) {
     req.user = req.session.user;
     return next();

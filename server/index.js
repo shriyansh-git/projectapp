@@ -7,22 +7,25 @@ const MongoStore = require('connect-mongo');
 
 const app = express();
 
-// ✅ Frontend Netlify URL
-const CLIENT_URL = 'https://instapicme.netlify.app';
+const isProduction = process.env.NODE_ENV === 'production';
+const CLIENT_URL = isProduction
+  ? 'https://instapicme.netlify.app'
+  : 'http://localhost:3000';
 
-// ✅ Log to confirm server starts
-console.log('✅ index.js is running');
+console.log(`✅ Server starting in ${isProduction ? 'PRODUCTION' : 'LOCAL'} mode`);
+console.log(`✅ Allowed origin: ${CLIENT_URL}`);
 
-// ✅ Middleware
+// ✅ Middleware: CORS
 app.use(cors({
   origin: CLIENT_URL,
   credentials: true,
 }));
 
+// ✅ Middleware: JSON parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Session config
+// ✅ Session configuration
 app.use(session({
   name: 'sid',
   secret: process.env.SESSION_SECRET || 'supersecret',
@@ -34,25 +37,24 @@ app.use(session({
   }),
   cookie: {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: isProduction, // ✅ true in production (HTTPS), false locally
+    sameSite: isProduction ? 'none' : 'lax', // ✅ 'none' for cross-origin, 'lax' for local
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 }));
 
 // ✅ Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/posts', require('./routes/posts'));
+app.use('/api/users', require('./routes/users'));
 
-// ❌ REMOVE frontend serving – not needed for backend-only Render deployment
-// app.use(express.static(path.join(__dirname, '../client/build')));
-// app.get('*', (req, res) =>
-//   res.sendFile(path.join(__dirname, '../client/build/index.html'))
-// );
-
-// ✅ Connect to MongoDB then start server
+// ✅ MongoDB + Start Server
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    app.listen(5000, () => console.log('🚀 Server running on port 5000'));
+    console.log('✅ MongoDB connected successfully');
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running on ${isProduction ? `PORT ${PORT}` : `http://localhost:${PORT}`}`)
+    );
   })
   .catch(err => console.error('❌ MongoDB connection error:', err));

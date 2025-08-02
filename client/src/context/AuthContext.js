@@ -13,22 +13,25 @@ export const AuthProvider = ({ children }) => {
     axios
       .get(`${API}/me`, { withCredentials: true })
       .then(res => {
-        setUser(res.data.user || null);
+        setUser(res.data); // ✅ res.data is already user object
       })
-      .catch(() => setUser(null))
+      .catch(() => {
+        console.log('🔒 No active session');
+        setUser(null);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   const login = async (email, password) => {
     await axios.post(`${API}/login`, { email, password }, { withCredentials: true });
     const res = await axios.get(`${API}/me`, { withCredentials: true });
-    setUser(res.data.user);
+    setUser(res.data);
   };
 
   const register = async (username, email, password) => {
     await axios.post(`${API}/register`, { username, email, password }, { withCredentials: true });
     const res = await axios.get(`${API}/me`, { withCredentials: true });
-    setUser(res.data.user);
+    setUser(res.data);
   };
 
   const logout = async () => {
