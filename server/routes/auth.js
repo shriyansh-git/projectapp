@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Post = require('../models/Post'); // Make sure this is imported
 
 // 📨 Register
 router.post('/register', async (req, res) => {
@@ -50,6 +51,9 @@ router.post('/login', async (req, res) => {
 
 // 👤 Me (get logged-in user)
 router.get('/me', (req, res) => {
+  console.log('🧪 /me session ID:', req.sessionID);
+  console.log('🧪 /me session data:', req.session);
+
   if (req.session.user) {
     res.status(200).json({ user: req.session.user });
   } else {
@@ -61,11 +65,10 @@ router.get('/me', (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
-    res.clearCookie('connect.sid');
+    res.clearCookie('sid'); // Make sure 'sid' matches your cookie name
     res.status(200).json({ message: 'Logged out' });
   });
 });
-const Post = require('../models/Post'); // Make sure this is imported
 
 // 🔹 Public user profile
 router.get('/user/:id', async (req, res) => {
