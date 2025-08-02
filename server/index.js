@@ -27,19 +27,19 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ CORS for local dev
+// ✅ CORS setup
 app.use(cors({
- origin: [
-  'https://instapicme.netlify.app',
-  'https://instapichere.netlify.app',  // ✅ <-- NEW one!
-  'http://localhost:3000'
-],
+  origin: [
+    'https://instapicme.netlify.app',
+    'https://instapichere.netlify.app',
+    'http://localhost:3000'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ✅ Session config for localhost (no HTTPS)
+// ✅ Session setup (FIXED: secure + sameSite)
 app.use(session({
   name: 'sid',
   secret: process.env.SESSION_SECRET || 'keyboardcat',
@@ -47,13 +47,13 @@ app.use(session({
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
-    ttl: 60 * 60 * 24,
+    ttl: 60 * 60 * 24, // 1 day
   }),
   cookie: {
     httpOnly: true,
-    secure: false,
-    sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24 * 7,
+    secure: true,         // ✅ Required for HTTPS
+    sameSite: 'none',     // ✅ Allows cross-origin
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   }
 }));
 
