@@ -1,108 +1,87 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 const User = require('../models/User');
-const Post = require('../models/Post');
 
-// 📨 Register
+// 🟢 REGISTER
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
+
   try {
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
 
-    const newUser = new User({ username, email, password });
-    await newUser.save();
-
-    req.session.user = {
-      id: newUser._id,
-      username: newUser.username,
-      email: newUser.email
-    };
-
-    console.log('✅ Session after register:', req.session);
-    res.status(201).json({ user: req.session.user });
-  } catch (err) {
-    console.error('❌ Register error:', err.message);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// 🔑 Login
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
+    // ✅ Set session after registration
     req.session.user = {
       id: user._id,
       username: user.username,
-      email: user.email
+      email: user.email,
     };
 
-    console.log('✅ Session after login:', req.session);
-    res.status(200).json({ user: req.session.user });
+    console.log('🧠 Session set after register:', req.session.user);
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    console.error('❌ Login error:', err.message);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error(err);
+    res.status(500).json({ message: 'Registration failed' });
   }
 });
 
-// 👤 Me (get logged-in user)
+// 🟢 LOGIN
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+    // ✅ Set session after login
+    req.session.user = {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+    };
+
+    console.log('🧠 Session set after login:', req.session.user);
+    res.json({ message: 'Login successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Login failed' });
+  }
+});
+
+// 🟢 GET CURRENT USER
 router.get('/me', (req, res) => {
   console.log('🧪 /me session ID:', req.sessionID);
   console.log('🧪 /me full session:', req.session);
   console.log('🧪 /me session user:', req.session.user);
 
   if (req.session.user) {
-    res.status(200).json({ user: req.session.user });
+    res.json(req.session.user);
   } else {
-    res.status(200).json({ user: null });
+    res.status(401).json(null);
   }
 });
 
-// 🚪 Logout
+// 🟢 LOGOUT
 router.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
 
-    // ✅ Clear the correct cookie
     res.clearCookie('sid', {
       path: '/',
       sameSite: 'none',
-      secure: true
+      secure: true,
     });
 
-    res.status(200).json({ message: 'Logged out' });
+    res.json({ message: 'Logged out' });
   });
-});
-
-// 🔹 Public user profile
-router.get('/user/:id', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('-password');
-    const posts = await Post.find({ user: user._id }).sort({ createdAt: -1 });
-    res.json({ user, posts });
-  } catch (err) {
-    console.error('Failed to fetch user:', err);
-    res.status(500).json({ error: 'Something went wrong' });
-  }
-});
-
-// 🔍 Temporary test route
-router.get('/test', (req, res) => {
-  res.json({ message: '✅ Auth test route working' });
-});
-
-// 🧪 Debug session setter
-router.get('/debug-session', (req, res) => {
-  req.session.debug = true;
-  res.json({ message: 'Session test set' });
 });
 
 module.exports = router;
