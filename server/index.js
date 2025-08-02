@@ -8,10 +8,10 @@ const path = require('path');
 
 const app = express();
 
-// ✅ Confirm this is your frontend Netlify URL
+// ✅ Frontend Netlify URL
 const CLIENT_URL = 'https://instapicme.netlify.app';
 
-// 🧪 Log to confirm server starts
+// ✅ Log to confirm server starts
 console.log('✅ index.js is running');
 
 // ✅ Middleware
@@ -37,21 +37,21 @@ app.use(session({
     httpOnly: true,
     secure: true,
     sameSite: 'none',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
 }));
 
 // ✅ Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/posts', require('./routes/post'));
+app.use('/api/posts', require('./routes/posts')); // ✅ FIXED HERE
 
-// Optional: serve frontend in production
+// ✅ Serve frontend build in production
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.get('*', (req, res) =>
   res.sendFile(path.join(__dirname, '../client/build/index.html'))
 );
 
-// ✅ Connect to DB then start server
+// ✅ Connect to MongoDB then start server
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     app.listen(5000, () => console.log('🚀 Server running on port 5000'));
