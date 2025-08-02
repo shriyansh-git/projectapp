@@ -13,7 +13,23 @@ router.get('/', async (req, res) => {
 
     res.json(posts);
   } catch (err) {
+    console.error('Error fetching all posts:', err);
     res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
+
+// 📌 Get current user's posts (for Profile page)
+router.get('/me', isAuthenticated, async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.session.user.id })
+      .sort({ createdAt: -1 })
+      .populate('user', 'username')
+      .populate('comments.user', 'username');
+
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching your posts:', err);
+    res.status(500).json({ error: 'Failed to fetch your posts' });
   }
 });
 
@@ -33,6 +49,7 @@ router.post('/', isAuthenticated, async (req, res) => {
     const populated = await post.populate('user', 'username');
     res.status(201).json(populated);
   } catch (err) {
+    console.error('Error creating post:', err);
     res.status(500).json({ error: 'Failed to create post' });
   }
 });
@@ -56,6 +73,7 @@ router.post('/:id/comments', isAuthenticated, async (req, res) => {
     const populated = await Post.findById(post._id).populate('comments.user', 'username');
     res.status(201).json(populated.comments.at(-1));
   } catch (err) {
+    console.error('Error adding comment:', err);
     res.status(500).json({ error: 'Failed to add comment' });
   }
 });
@@ -78,6 +96,7 @@ router.post('/:id/like', isAuthenticated, async (req, res) => {
     await post.save();
     res.status(200).json({ likes: post.likes });
   } catch (err) {
+    console.error('Error toggling like:', err);
     res.status(500).json({ error: 'Failed to toggle like' });
   }
 });

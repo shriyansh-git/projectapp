@@ -12,6 +12,7 @@ export default function Profile() {
         const res = await fetch(`${process.env.REACT_APP_API_URL}/api/posts/me`, {
           credentials: 'include',
         });
+
         if (!res.ok) throw new Error('Failed to fetch your posts');
         const data = await res.json();
         setMyPosts(data);

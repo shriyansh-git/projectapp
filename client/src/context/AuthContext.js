@@ -1,4 +1,3 @@
-// context/AuthContext.js
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -16,9 +15,7 @@ export const AuthProvider = ({ children }) => {
       .then(res => {
         setUser(res.data.user || null);
       })
-      .catch(() => {
-        setUser(null);
-      })
+      .catch(() => setUser(null))
       .finally(() => setLoading(false));
   }, []);
 

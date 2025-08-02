@@ -14,16 +14,18 @@ export default function Login() {
     setErrorMsg('');
     try {
       await login(email, password);
-      navigate('/');
+      navigate('/'); // ✅ Redirect on successful login
     } catch (err) {
-      setErrorMsg('Invalid email or password.');
+      setErrorMsg('Invalid email or password.'); // ✅ Error shown if login fails
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8">
       <div className="w-full max-w-sm bg-[#111] border border-gray-800 rounded-2xl p-8 shadow-lg">
-        <h2 className="text-2xl font-semibold text-center text-white mb-6">Welcome Back 👋</h2>
+        <h2 className="text-2xl font-semibold text-center text-white mb-6">
+          Welcome Back 👋
+        </h2>
 
         {errorMsg && (
           <p className="mb-4 text-red-500 text-sm text-center">{errorMsg}</p>

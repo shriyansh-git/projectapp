@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Post({ post, toggleLike, handleCommentSubmit }) {
   const [showComments, setShowComments] = useState(false);
@@ -13,7 +14,14 @@ export default function Post({ post, toggleLike, handleCommentSubmit }) {
       <div className="p-4">
         <h2 className="text-xl font-semibold mb-1">{post.title}</h2>
         <p className="text-gray-400 text-sm mb-2">{post.description}</p>
-        <p className="text-indigo-400 text-xs mb-3">Posted by {post.user?.username}</p>
+
+        {/* ✅ Link to user profile */}
+        <p className="text-indigo-400 text-xs mb-3">
+          Posted by{' '}
+          <Link to={`/user/${post.user?._id}`} className="underline hover:text-indigo-300">
+            {post.user?.username}
+          </Link>
+        </p>
 
         {/* Like Button */}
         <button
